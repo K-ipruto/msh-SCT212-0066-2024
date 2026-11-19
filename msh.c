@@ -81,6 +81,8 @@ int main(void) {
                 last_status = 1;
             } else if (WIFEXITED(status)) {
                 last_status = WEXITSTATUS(status);
+            } else if (WIFSIGNALED(status)) {
+                last_status = 128 + WTERMSIG(status);
             }
         }
     }
