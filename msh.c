@@ -22,9 +22,10 @@ int main(void) {
     char *line = NULL;
     size_t len = 0;
     char *argv[MAX_ARGS];
+    int last_status = 0;
 
     while (1) {
-        printf("msh[0]> ");
+        printf("msh[%d]> ", last_status);
         fflush(stdout);
 
         if (getline(&line, &len, stdin) == -1) {
@@ -39,10 +40,11 @@ int main(void) {
 
         if (strcmp(argv[0], "exit") == 0) {
             free(line);
-            return 0;
+            return last_status;
         } else if (strcmp(argv[0], "help") == 0) {
             printf("msh - minimal Unix shell\n");
             printf("Built-ins: cd [dir], help, exit\n");
+            last_status = 0;
             continue;
         } else if (strcmp(argv[0], "cd") == 0) {
             const char *target = argv[1];
@@ -50,11 +52,15 @@ int main(void) {
                 target = getenv("HOME");
                 if (target == NULL) {
                     fprintf(stderr, "cd: HOME not set\n");
+                    last_status = 1;
                     continue;
                 }
             }
             if (chdir(target) != 0) {
                 perror("cd");
+                last_status = 1;
+            } else {
+                last_status = 0;
             }
             continue;
         }
@@ -62,6 +68,7 @@ int main(void) {
         pid_t pid = fork();
         if (pid < 0) {
             perror("fork");
+            last_status = 1;
             continue;
         } else if (pid == 0) {
             execvp(argv[0], argv);
@@ -71,10 +78,13 @@ int main(void) {
             int status;
             if (waitpid(pid, &status, 0) < 0) {
                 perror("waitpid");
+                last_status = 1;
+            } else if (WIFEXITED(status)) {
+                last_status = WEXITSTATUS(status);
             }
         }
     }
 
     free(line);
-    return 0;
+    return last_status;
 }
