@@ -38,6 +38,16 @@ int main(void) {
             continue;
         }
 
+        int background = 0;
+        if (strcmp(argv[argc - 1], "&") == 0) {
+            background = 1;
+            argv[argc - 1] = NULL;
+            argc--;
+            if (argc == 0) {
+                continue;
+            }
+        }
+
         if (strcmp(argv[0], "exit") == 0) {
             free(line);
             return last_status;
@@ -75,14 +85,19 @@ int main(void) {
             perror(argv[0]);
             exit(127);
         } else {
-            int status;
-            if (waitpid(pid, &status, 0) < 0) {
-                perror("waitpid");
-                last_status = 1;
-            } else if (WIFEXITED(status)) {
-                last_status = WEXITSTATUS(status);
-            } else if (WIFSIGNALED(status)) {
-                last_status = 128 + WTERMSIG(status);
+            if (background) {
+                printf("[bg] PID: %d\n", pid);
+                last_status = 0;
+            } else {
+                int status;
+                if (waitpid(pid, &status, 0) < 0) {
+                    perror("waitpid");
+                    last_status = 1;
+                } else if (WIFEXITED(status)) {
+                    last_status = WEXITSTATUS(status);
+                } else if (WIFSIGNALED(status)) {
+                    last_status = 128 + WTERMSIG(status);
+                }
             }
         }
     }
