@@ -87,6 +87,7 @@ int main(void) {
         } else if (strcmp(argv[0], "help") == 0) {
             printf("msh - minimal Unix shell\n");
             printf("Built-ins: cd [dir], help, exit\n");
+            printf("Supports external commands, background jobs (&), and output redirection (>)\n");
             last_status = 0;
             continue;
         } else if (strcmp(argv[0], "cd") == 0) {
@@ -114,6 +115,9 @@ int main(void) {
             last_status = 1;
             continue;
         } else if (pid == 0) {
+            if (!background) {
+                signal(SIGINT, SIG_DFL);
+            }
             if (outfile != NULL) {
                 int fd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
                 if (fd < 0) {
