@@ -25,6 +25,10 @@ int main(void) {
     int last_status = 0;
 
     while (1) {
+        /* Reap any finished background child processes without blocking */
+        while (waitpid(-1, NULL, WNOHANG) > 0) {
+        }
+
         printf("msh[%d]> ", last_status);
         fflush(stdout);
 
