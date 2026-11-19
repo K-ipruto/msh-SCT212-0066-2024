@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,6 +42,8 @@ int main(void) {
     size_t len = 0;
     char *argv[MAX_ARGS];
     int last_status = 0;
+
+    signal(SIGINT, SIG_IGN);
 
     while (1) {
         while (waitpid(-1, NULL, WNOHANG) > 0) {
