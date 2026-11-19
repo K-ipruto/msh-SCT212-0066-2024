@@ -37,6 +37,15 @@ int main(void) {
             continue;
         }
 
+        if (strcmp(argv[0], "exit") == 0) {
+            free(line);
+            return 0;
+        } else if (strcmp(argv[0], "help") == 0) {
+            printf("msh - minimal Unix shell\n");
+            printf("Built-ins: cd [dir], help, exit\n");
+            continue;
+        }
+
         pid_t pid = fork();
         if (pid < 0) {
             perror("fork");
