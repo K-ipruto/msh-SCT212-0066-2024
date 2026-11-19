@@ -44,6 +44,19 @@ int main(void) {
             printf("msh - minimal Unix shell\n");
             printf("Built-ins: cd [dir], help, exit\n");
             continue;
+        } else if (strcmp(argv[0], "cd") == 0) {
+            const char *target = argv[1];
+            if (target == NULL) {
+                target = getenv("HOME");
+                if (target == NULL) {
+                    fprintf(stderr, "cd: HOME not set\n");
+                    continue;
+                }
+            }
+            if (chdir(target) != 0) {
+                perror("cd");
+            }
+            continue;
         }
 
         pid_t pid = fork();
