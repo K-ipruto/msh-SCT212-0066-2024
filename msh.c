@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 200809L
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -110,6 +111,19 @@ int main(void) {
             last_status = 1;
             continue;
         } else if (pid == 0) {
+            if (outfile != NULL) {
+                int fd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                if (fd < 0) {
+                    perror(outfile);
+                    exit(1);
+                }
+                if (dup2(fd, STDOUT_FILENO) < 0) {
+                    perror("dup2");
+                    close(fd);
+                    exit(1);
+                }
+                close(fd);
+            }
             execvp(argv[0], argv);
             perror(argv[0]);
             exit(127);
