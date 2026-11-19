@@ -18,6 +18,23 @@ int parse_line(char *line, char **argv) {
     return argc;
 }
 
+int extract_redirection(char **argv, int *argc, char **outfile) {
+    *outfile = NULL;
+    for (int i = 0; i < *argc; i++) {
+        if (strcmp(argv[i], ">") == 0) {
+            if (i + 1 >= *argc) {
+                fprintf(stderr, "msh: syntax error near unexpected token `newline'\n");
+                return -1;
+            }
+            *outfile = argv[i + 1];
+            argv[i] = NULL;
+            *argc = i;
+            break;
+        }
+    }
+    return 0;
+}
+
 int main(void) {
     char *line = NULL;
     size_t len = 0;
@@ -25,7 +42,6 @@ int main(void) {
     int last_status = 0;
 
     while (1) {
-        /* Reap any finished background child processes without blocking */
         while (waitpid(-1, NULL, WNOHANG) > 0) {
         }
 
@@ -50,6 +66,15 @@ int main(void) {
             if (argc == 0) {
                 continue;
             }
+        }
+
+        char *outfile = NULL;
+        if (extract_redirection(argv, &argc, &outfile) < 0) {
+            last_status = 1;
+            continue;
+        }
+        if (argc == 0) {
+            continue;
         }
 
         if (strcmp(argv[0], "exit") == 0) {
